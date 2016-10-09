@@ -32,8 +32,6 @@ export class MotorModule {
     }
 
     keyControl(ch, key) {
-        console.log(key);
-        console.log(ch);
         if (key) {
             switch (key.name) {
                 case 'up': this.motorsForward(); break;
