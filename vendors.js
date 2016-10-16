@@ -5,3 +5,8 @@ export function Five() {
 export function KeyPress() {
     return require('Keypress');
 }
+
+export function GamePad(type) {
+    let GamePad = require('node-gamepad');
+    return new GamePad(type);
+}

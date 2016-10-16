@@ -1,9 +1,10 @@
-import { Five, KeyPress } from '../vendors';
+import { Five, KeyPress, GamePad } from '../vendors';
 
 export class ServoModule {
     constructor() { 
         this.platformBottomServo = {};
         this.platformUpperServo = {};
+        this.triggerServo = {};
     }
 
     initServos() {
@@ -19,48 +20,66 @@ export class ServoModule {
             address: 0x40 
         });
 
+        this.triggerServo = new Five().Servo.Continuous({
+            pin: 2,
+            controller: "PCA9685",
+            address: 0x40 
+        });
+
         this.platformBottomServo.center();
-        this.platformUpperServo.center();
+        this.platformUpperServo.to(70);
 
-        this.initKeyHandling();
+        this.initGamePad();
     }
 
-    initKeyHandling() {
-        KeyPress()(process.stdin);
+    initGamePad() {
+        let gamePad = new GamePad('n64/retrolink');
 
-        process.stdin.on("keypress", (ch, key) => this.keyControl(ch, key));
-        process.stdin.setRawMode(true);
-        process.stdin.resume();
-    }
+        gamePad.connect();
+        
+        gamePad.on('cUp:press', () => this.platformUp());
+        gamePad.on('cDown:press', () => this.platformDown());
+        gamePad.on('cRight:press', () => this.platformRight());
+        gamePad.on('cLeft:press', () => this.platformLeft());
 
-    keyControl(ch, key) {
-        if (key) {
-            switch (key.name) {
-                case 'w': this.platformUp(); break;
-                case 's': this.platformDown(); break;
-                case 'a': this.platformRight(); break;
-                case 'd': this.platformLeft(); break;
-                case 'space': this.servoStop(); break;
-                default: break;
-            }
-        }
+        gamePad.on('cUp:release', () => this.servoStop());
+        gamePad.on('cDown:release', ()=> this.servoStop());
+        gamePad.on('cRight:release', () => this.servoStop());
+        gamePad.on('cLeft:release', () => this.servoStop());
+
+        gamePad.on('a:press', () => this.triggerServoCW());
+        gamePad.on('b:press', () => this.triggerServoCCW());
+
+        gamePad.on('a:release', () => this.triggerServoStop());
+        gamePad.on('b:release', () => this.triggerServoStop());
     }
 
     platformUp() {
-        console.log('w pressed');
-        this.platformUpperServo.to(180);
+        this.platformUpperServo.to(this.platformUpperServo.value + 20);
     }
 
     platformDown() {
-        this.platformUpperServo.to(0);
+        this.platformUpperServo.to(this.platformUpperServo.value - 20);
     }
 
     platformRight() {
-        this.platformBottomServo.to(180);
+        this.platformBottomServo.to(this.platformBottomServo.value + 20);
     }
 
     platformLeft() {
-        this.platformBottomServo.to(0);
+        this.platformBottomServo.to(this.platformBottomServo.value - 20);
+    }
+
+    triggerServoCW() {
+        this.triggerServo.cw(1);
+    }
+
+    triggerServoCCW() {
+        this.triggerServo.ccw(1);
+    }
+
+    triggerServoStop() {
+        this.triggerServo.stop();
     }
 
     servoStop() {

@@ -1,4 +1,4 @@
-import { Five, KeyPress } from '../vendors';
+import { Five, KeyPress, GamePad } from '../vendors';
 
 export class MotorModule {
     constructor(speed) {
@@ -20,28 +20,21 @@ export class MotorModule {
             left: new Five().Motor(configs.M2)
         };
 
-        this.initKeyHandling();
+        this.initGamePad();
     }
 
-    initKeyHandling() {
-        KeyPress()(process.stdin);
+    initGamePad() {
+        let gamePad = new GamePad('n64/retrolink');
 
-        process.stdin.on("keypress", (ch, key) => this.keyControl(ch, key));
-        process.stdin.setRawMode(true);
-        process.stdin.resume();
-    }
+        gamePad.connect();
 
-    keyControl(ch, key) {
-        if (key) {
-            switch (key.name) {
-                case 'up': this.motorsForward(); break;
-                case 'down': this.motorsBackward(); break;
-                case 'right': this.motorsRight(); break;
-                case 'left': this.motorsLeft(); break;
-                case 'space': this.motorsStop(); break;
-                default: break;
-            }
-        }
+        gamePad.on('center:move', (coords) => {
+            if (coords.x == 127 && coords.y == 0) this.motorsForward();
+            if (coords.x == 127 && coords.y == 255) this.motorsBackward();
+            if (coords.x == 0 && coords.y == 127) this.motorsLeft();
+            if (coords.x == 255 && coords.y == 127) this.motorsRight();
+            if (coords.x == 127 && coords.y == 127) this.motorsStop();
+        });
     }
 
     motorsForward() {
