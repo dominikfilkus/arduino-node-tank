@@ -9,21 +9,15 @@ export class ServoModule {
 
     initServos() {
         this.platformBottomServo = new Five().Servo({
-            pin: 0,
-            controller: "PCA9685",
-            address: 0x40
+            pin: 9
         });
 
         this.platformUpperServo = new Five().Servo({
-            pin: 1,
-            controller: "PCA9685",
-            address: 0x40 
+            pin: 10
         });
 
         this.triggerServo = new Five().Servo.Continuous({
-            pin: 2,
-            controller: "PCA9685",
-            address: 0x40 
+            pin: 3
         });
 
         this.platformBottomServo.center();
